@@ -1,6 +1,5 @@
 package com.example.tatoczenkom.resourcemanager;
 
-import android.provider.ContactsContract;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -8,19 +7,15 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBar.TabListener;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
 
 import java.util.Locale;
 
-
+/**
+ * Code utilizes a lot of parts taken from the Android samples for HorizontalPagin
+ * Code has been modified to work for our simple Resources App
+ */
 public class MainActivity extends ActionBarActivity {
 
     /**
@@ -141,8 +136,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
-            // Return a DummySectionFragment (defined as a static inner class
-            // below) with the page number as its lone argument.
+            // Return the fragment corresponding to the correct tab
             Fragment fragment = new Fragment();
             switch(position) {
                 case 0:
@@ -167,10 +161,6 @@ public class MainActivity extends ActionBarActivity {
                     fragment = maliciousAppsFragment;
                     break;
             }
-            /*Fragment fragment = new DummySectionFragment();
-            Bundle args = new Bundle();
-            args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-            fragment.setArguments(args); */
             return fragment;
         }
         // END_INCLUDE (fragment_pager_adapter_getitem)
@@ -229,51 +219,16 @@ public class MainActivity extends ActionBarActivity {
         }
 
         /* The following are each of the ActionBar.TabListener callbacks */
-
         public void onTabSelected(Tab tab, FragmentTransaction ft) {
-            /* Check if the fragment is already initialized
-            if (mFragment == null) {
-                // If not, instantiate and add it to the activity
-                mFragment = Fragment.instantiate(mActivity, mClass.getName());
-                ft.add(R.id.container, mFragment, mTag);
-            } else {
-                // If it exists, simply attach it in order to show it
-                ft.attach(mFragment);
-            } */
             mViewPager.setCurrentItem(tab.getPosition());
         }
 
+        // Not needed for swiping
         public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-            /*if (mFragment != null) {
-                // Detach the fragment, because another one is being attached
-                ft.detach(mFragment);
-            } */
         }
 
         public void onTabReselected(Tab tab, FragmentTransaction ft) {
             // User selected the already selected tab. Usually do nothing.
         }
     }
-
-
-   /* @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            ActionBar actionBar = getSupportActionBar();
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-            actionBar.setTitle("Resource Manager");
-            actionBar.setDisplayShowTitleEnabled(true);
-
-            Tab tab = actionBar.newTab().setText(R.string.battery_fragment).setTabListener(new TabListener<BatteryFragment>(this, "battery", BatteryFragment.class));
-            actionBar.addTab(tab);
-
-            tab = actionBar.newTab().setText(R.string.data_fragment).setTabListener(new TabListener<DataFragment>(this, "data", DataFragment.class));
-            actionBar.addTab(tab);
-
-            tab = actionBar.newTab().setText(R.string.malicious_apps_fragment).setTabListener(new TabListener<MaliciousAppsFragment>(this, "mal_app", MaliciousAppsFragment.class));
-            actionBar.addTab(tab);
-        }
-    } */
 }
