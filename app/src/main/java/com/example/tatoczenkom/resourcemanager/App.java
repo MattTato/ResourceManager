@@ -4,13 +4,18 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 
 /**
+ * APP
  *
+ * This class serves as the go-to collection of data
+ * and methods that allow 'ResourceManager' to
+ * conceptualize an app.
  */
 public class App extends PackageInfo {
 
     // Declare private fields
     private PackageInfo pkgInfo;
     private String displayName;     // human-readable name for the purposes of this app
+    private NetStat netstat;        // data point: network statistics
 
     /**
      * CONSTRUCTOR.
@@ -24,17 +29,26 @@ public class App extends PackageInfo {
     }
 
     /**
+     * Returns the netstat field. Initializes the field if necessary.
+     *
+     * This app's netstat field is not necessarily used.
+     * It is therefore not initialized in the constructor.
+     *
      * @return Network statistic structure
      */
     public NetStat getNetworkUsage() {
-        NetStat s = new NetStat(this.uid());
-        //s.getByUid(this.uid());
-        return s;
+
+        // Initialize if necessary
+        if (this.netstat == null) {
+            this.netstat = new NetStat(this.uid());
+        }
+
+        return this.netstat;
     }
 
     /**
      * Return the name of this application.
-     * @return
+     * @return display name of this application
      */
     public String name() {
 
@@ -43,12 +57,16 @@ public class App extends PackageInfo {
 
     /**
      * Get a reference to the package's application information.
-     * @return
+     * @return package's application information structure
      */
     public ApplicationInfo appinfo() {
         return this.pkgInfo.applicationInfo;
     }
 
+    /**
+     * Return the UID of this package.
+     * @return package UID
+     */
     public int uid() {
         return this.pkgInfo.applicationInfo.uid;
     }

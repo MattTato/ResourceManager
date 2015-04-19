@@ -1,5 +1,8 @@
 package com.example.tatoczenkom.resourcemanager;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,6 +13,8 @@ import android.support.v7.app.ActionBar.Tab;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -230,5 +235,31 @@ public class MainActivity extends ActionBarActivity {
         public void onTabReselected(Tab tab, FragmentTransaction ft) {
             // User selected the already selected tab. Usually do nothing.
         }
+    }
+
+    /**
+     * Return a list of Apps as reported by package.
+     */
+    public static List<App> pollApps(Context cxt) {
+
+        // Initialize a new App list
+        List<App> apps = new ArrayList<>();
+
+        // Grab a package manager to get package list
+        final PackageManager pm = cxt.getPackageManager();
+        List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+
+        // Retrieve any info wanted
+        for (PackageInfo app : packages) {
+
+            // Get the display name of the App
+            String name = app.applicationInfo.loadDescription(pm).toString();   // get the display name of the application
+
+            // Add the corresponding app to the list
+            App a = new App(app, name);
+            apps.add(apps.size(), a);
+        }
+
+        return apps;
     }
 }
