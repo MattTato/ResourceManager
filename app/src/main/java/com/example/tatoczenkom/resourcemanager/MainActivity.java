@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -251,15 +252,16 @@ public class MainActivity extends ActionBarActivity {
 
         // Retrieve any info wanted
         for (PackageInfo app : packages) {
-
             // Get the display name of the App
-            String name = app.applicationInfo.loadDescription(pm).toString();   // get the display name of the application
+            if(app.applicationInfo.loadLabel(pm) != null) {
+                Log.d("App description", app.applicationInfo.loadLabel(pm).toString());
+                String name = app.applicationInfo.loadLabel(pm).toString();   // get the display name of the application
 
-            // Add the corresponding app to the list
-            App a = new App(app, name);
-            apps.add(apps.size(), a);
+                // Add the corresponding app to the list
+                App a = new App(app, name);
+                apps.add(apps.size(), a);
+            }
         }
-
         return apps;
     }
 }

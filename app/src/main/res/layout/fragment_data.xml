@@ -4,8 +4,6 @@
     tools:context="com.example.tatoczenkom.resourcemanager.DataFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView android:layout_width="match_parent" android:layout_height="match_parent"
-        android:text="This is the data fragment." />
 
     <!-- This is the list of netstat items -->
     <ListView

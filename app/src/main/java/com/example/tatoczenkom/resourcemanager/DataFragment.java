@@ -35,13 +35,16 @@ public class DataFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_data, container, false);
+        View v = inflater.inflate(R.layout.fragment_data, container, false);
+        initializeList(v);
+        return v;
     }
+
 
     /**
      * Get application data and register on UI.
      */
-    private void initializeList() {
+    private void initializeList(View v) {
 
         Context cxt = getActivity();//.getApplicationContext();
 
@@ -74,7 +77,7 @@ public class DataFragment extends Fragment {
         appAdapter = new ArrayAdapter<>(cxt, android.R.layout.simple_list_item_1, displayData);
 
         // Initialize the display list (connect adapter to UI-side list)
-        appList = (ListView)(getView().findViewById(R.id.data_app_list));
+        appList = (ListView)(v.findViewById(R.id.data_app_list));
         appList.setAdapter(appAdapter);
     }
 }
