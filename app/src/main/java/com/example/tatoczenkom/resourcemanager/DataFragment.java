@@ -2,6 +2,7 @@ package com.example.tatoczenkom.resourcemanager;
 
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -45,8 +46,7 @@ public class DataFragment extends Fragment {
      * Get application data and register on UI.
      */
     private void initializeList(View v) {
-
-        Context cxt = getActivity();//.getApplicationContext();
+        Context cxt = getActivity();
 
         // Initialize the logic-side app list, then sort
         apps = MainActivity.pollApps(cxt);
