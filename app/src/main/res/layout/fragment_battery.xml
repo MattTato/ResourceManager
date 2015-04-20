@@ -3,4 +3,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.tatoczenkom.resourcemanager.BatteryFragment">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center">
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Settings Page"
+            android:id="@+id/opensettings_button"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
 </FrameLayout>

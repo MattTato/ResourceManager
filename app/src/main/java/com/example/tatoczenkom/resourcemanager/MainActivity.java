@@ -3,6 +3,7 @@ package com.example.tatoczenkom.resourcemanager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageStats;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -256,7 +257,6 @@ public class MainActivity extends ActionBarActivity {
             if(app.applicationInfo.loadLabel(pm) != null) {
                 Log.d("App description", app.applicationInfo.loadLabel(pm).toString());
                 String name = app.applicationInfo.loadLabel(pm).toString();   // get the display name of the application
-
                 // Add the corresponding app to the list
                 App a = new App(app, name);
                 apps.add(apps.size(), a);
