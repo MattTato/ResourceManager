@@ -69,10 +69,19 @@ public class NetStat {
      * Computes the total bytes sent and received for
      * this network statistic.
      *
-     * @return total bytes received/sent
+     * @return total bytes received and sent
      */
     public long total() {
         return (this.sent + this.received());
+    }
+
+    /**
+     * Computes the total bytes in terms of specified units.
+     *
+     * @return network traffic volume
+     */
+    public long total(int unitsFlag) {
+        return convert(this.total(), unitsFlag);
     }
 
     /**
@@ -86,7 +95,9 @@ public class NetStat {
     }
 
     /**
-     * Returns the long-representation of the byte-count in the specified units.
+     * Returns the long-representation of the byte-count
+     * in terms of the specified units specified by the
+     * units-constant flag.
      *
      * REQUIRES 0 <= unitsFlag <= MAX_FLAG
      * @param bytes
@@ -95,9 +106,8 @@ public class NetStat {
      */
     public static long convert(long bytes, int unitsFlag) {
 
-        int power = unitsFlag;
         long divisor = 1;
-        for (int i=1; i<power; i++) {
+        for (int i=1; i<=unitsFlag; i++) {
             divisor *= 1024;
         }
 
@@ -110,20 +120,14 @@ public class NetStat {
      *
      * @return unit-flag for largest informative unit
      */
-    public int biggestInformativeUnit() {
-
-        // Get the constraining data point
-        long constraint = this.received;        // assume 'received' data to be the smallest
-        if (this.sent < this.received()) {      // use 'sent' if it's actually the smaller
-            constraint = this.sent;
-        }
+    public static int biggestInformativeUnit(long bytes) {
 
         // Find the largest unit flag capable of expressing the constraint
         int flag = MAX_UNIT;
         while (flag > MIN_UNIT) {
 
             // If this flag is informative, break
-            if (convert(constraint, flag) > 0) {
+            if (convert(bytes, flag) > 0) {
                 break;
             }
 
@@ -135,9 +139,27 @@ public class NetStat {
     }
 
     /**
-     * Returns a string abbreviation of the specified units of byte-volume.
-     * @param unitsFlag
-     * @return
+     * Returns the units-constant flag which may be used to
+     * informatively express the smaller of data received
+     * and data sent.
+     *
+     * @return units-constant flag
+     */
+    public int biggestInformativeUnit() {
+        long constraint = this.received;
+        if (this.sent < constraint) {
+            constraint = this.sent;
+        }
+
+        return biggestInformativeUnit(constraint);
+    }
+
+    /**
+     * Returns a string abbreviation corresponding to the
+     * specified units flag.
+     *
+     * @param unitsFlag units-constant flag
+     * @return string abbreviation of units; empty if unrecognized flag
      */
     public static String unitAbbv(int unitsFlag) {
         String abbv = "";

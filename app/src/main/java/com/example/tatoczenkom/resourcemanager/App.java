@@ -10,12 +10,13 @@ import android.content.pm.PackageInfo;
  * and methods that allow 'ResourceManager' to
  * conceptualize an app.
  */
-public class App extends PackageInfo {
+public class App {
 
     // Declare private fields
     private PackageInfo pkgInfo;
     private String displayName;     // human-readable name for the purposes of this app
     private NetStat netstat;        // data point: network statistics
+    private int uid;
 
     /**
      * CONSTRUCTOR.
@@ -26,6 +27,7 @@ public class App extends PackageInfo {
 
         this.pkgInfo = i;
         this.displayName = displayName;
+        this.uid = i.applicationInfo.uid;
     }
 
     /**
@@ -56,6 +58,14 @@ public class App extends PackageInfo {
     }
 
     /**
+     * Get a reference to the PackageInfo private field.
+     * @return package information structure
+     */
+    public PackageInfo pkgInfo() {
+        return this.pkgInfo;
+    }
+
+    /**
      * Get a reference to the package's application information.
      * @return package's application information structure
      */
@@ -68,7 +78,7 @@ public class App extends PackageInfo {
      * @return package UID
      */
     public int uid() {
-        return this.pkgInfo.applicationInfo.uid;
+        return this.uid;
     }
 
 

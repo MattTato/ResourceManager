@@ -253,14 +253,16 @@ public class MainActivity extends ActionBarActivity {
 
         // Retrieve any info wanted
         for (PackageInfo app : packages) {
-            // Get the display name of the App
-            if(app.applicationInfo.loadLabel(pm) != null) {
-                Log.d("App description", app.applicationInfo.loadLabel(pm).toString());
-                String name = app.applicationInfo.loadLabel(pm).toString();   // get the display name of the application
-                // Add the corresponding app to the list
-                App a = new App(app, name);
-                apps.add(apps.size(), a);
+            // Get the app's name
+            String displayName = app.applicationInfo.loadLabel(pm).toString();
+            if (displayName == null) {
+                displayName = "UNNAMED";
             }
+            Log.d("App description", displayName);
+
+            // Add the corresponding app to the list
+            App a = new App(app, displayName);
+            apps.add(apps.size(), a);
         }
         return apps;
     }
