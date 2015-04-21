@@ -21,6 +21,10 @@ import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
+ *
+ * DATAFRAGMENT
+ *
+ * This fragment displays network traffic statistics by app.
  */
 public class DataFragment extends Fragment {
 
@@ -112,48 +116,63 @@ public class DataFragment extends Fragment {
 
         NetStat n = a.getNetworkUsage();
         long millisSinceBoot = SystemClock.elapsedRealtime();
+        long hoursSinceBoot = millisSinceBoot / MILLIS_IN_HOURS;
 
-        String packagename = "Package: \"" + a.pkgInfo().packageName + '\n';
+        // PACKAGE NAME FIELD
+        String detail = "Package: \"" + a.pkgInfo().packageName + "\"\n";
+        detail += "UID=" + Integer.toString(a.uid()) + '\n';
 
-        String elapsed = "\nHours since boot: " + Long.toString(millisSinceBoot / MILLIS_IN_HOURS) + '\n';
-        String ratio = "Send:Receive = " + (int)(100.0 * ((double)n.sent() / (double)n.received()) + 0.5) + "%\n";
+        // HOURS-SINCE-BOOT FIELD
+        detail += "\nHours since boot: " + Long.toString(hoursSinceBoot) + '\n';
 
-        String sent = "\nSent:\t" +
-                friendlyMeasure(n.sent()) + '\n' +
-                "Rate:\t" + rateDescription(n.sent(), millisSinceBoot) + '\n';
+        // SEND:RECEIVE RATIO FIELD
+        detail += "Send:Receive = " + Integer.toString((int)(100.0 * ((double)n.sent() / (double)n.received()) + 0.5)) + "%\n";
 
-        String recd = "\nRecd:\t" +
-                friendlyMeasure(n.received())+ '\n' +
-                "Rate:\t" + rateDescription(n.received(), millisSinceBoot) + '\n';
+        // DATA-BREAKDOWN FIELDS
+        detail += '\n';
+        detail += detailFieldContent("Sent", n.sent(), hoursSinceBoot);
+        detail += detailFieldContent("Recd", n.received(), hoursSinceBoot);
+        detail += detailFieldContent("Total", n.total(), hoursSinceBoot);
 
-        String total = "\nTotal:\t" +
-                friendlyMeasure(n.total()) + '\n' +
-                "Rate:\t" + rateDescription(n.total(), millisSinceBoot) + '\n';
-
-        return (packagename + elapsed + ratio + sent + recd + total);
+        return detail;
     }
 
     /**
-     * Returns the data rate (in friendly units) as a string.
+     * For a byte-volume, returns a string representation
+     * of the volume in terms of friendly units. The unit
+     * abbreviation is appended.
      *
-     * @param bytes bytes of data
-     * @param millisElapsed milliseconds since system boot
-     *
-     * @return friendly description of data rate
+     * @param bytes volume of bytes
+     * @return string-representation of volume in friendly units
      */
-    private String rateDescription(long bytes, long millisElapsed) {
-
-        long hours = millisElapsed / MILLIS_IN_HOURS;
-        if (hours < 1) {
-            return "UNAVAILABLE";
-        }
-
-        long data = bytes / hours;
-        return friendlyMeasure(data) + "/hr";
-    }
-
     private String friendlyMeasure(long bytes) {
         int friendlyUnits = NetStat.biggestInformativeUnit(bytes);
         return Long.toString(NetStat.convert(bytes, friendlyUnits)) + ' ' + NetStat.unitAbbv(friendlyUnits);
+    }
+
+    /**
+     * Returns a string containing a field of data for the
+     * data detail dialog. Format:
+     * <NAME>: <VOLUME> [(<RATE>)]
+     *
+     * @param name name of measure
+     * @param bytes byte volume
+     * @param hoursSinceBoot long-represented hours since boot
+     *
+     * @return data field for placement within data-detail dialog
+     */
+    private String detailFieldContent(String name, long bytes, long hoursSinceBoot) {
+
+        // Put NAME and byte-volume
+        String content = name + ":\t";
+
+        // If a rate is useful, add as parenthetical
+        content += friendlyMeasure(bytes);
+        if (hoursSinceBoot >= 2) {
+            long dataRate = bytes / hoursSinceBoot;
+            content += " (" + friendlyMeasure(dataRate) + "/hr)";
+        }
+        content += '\n';
+        return content;
     }
 }
