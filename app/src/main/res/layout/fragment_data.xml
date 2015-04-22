@@ -5,10 +5,10 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-    <!-- This is the list of netstat items -->
+    <!-- APPGROUP listing -->
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/data_app_list"></ListView>
+        android:id="@+id/data_app_list" />
 
 </FrameLayout>

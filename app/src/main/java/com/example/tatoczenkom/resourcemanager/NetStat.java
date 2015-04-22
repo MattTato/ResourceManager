@@ -19,6 +19,7 @@ public class NetStat {
     public static final int GIGAS = 3;  // 1024^3 bytes in GIGAS
     public static final int TERAS = 4;
 
+    // Inclusive unit-flag bounds
     public static final int MIN_UNIT = BYTES, MAX_UNIT = TERAS;
 
     /**
@@ -29,6 +30,17 @@ public class NetStat {
     public NetStat(int uid) {
         this.sent = TrafficStats.getUidTxBytes(uid);
         this.received = TrafficStats.getUidRxBytes(uid);
+    }
+
+    /**
+     * CONSTRUCTOR
+     * One-time definition of a NetStat point
+     * @param sent volume of data sent over network (bytes)
+     * @param recd volume of data received over network (bytes)
+     */
+    public NetStat(long sent, long recd) {
+        this.sent = sent;
+        this.received = recd;
     }
 
     /**

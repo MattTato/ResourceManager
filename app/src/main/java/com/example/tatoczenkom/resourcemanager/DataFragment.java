@@ -1,6 +1,5 @@
 package com.example.tatoczenkom.resourcemanager;
 
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * A simple {@link Fragment} subclass.
  *
@@ -37,10 +35,13 @@ public class DataFragment extends Fragment {
         // Required empty public constructor
     }
 
-    //List<App> apps;             // consider use of public/private
-    List<AppGroup> groups;
+    List<AppGroup> groups;      // logic-side list of like-UID app groups
     ListAdapter appAdapter;     // used to display
     ListView appList;           // UI-visible list of apps
+
+    NetStat aggregate;
+    long millisSinceBoot;
+    long hoursSinceBoot;
 
     static final long MILLIS_IN_HOURS = (60 * 60 * 1000);
 
@@ -60,6 +61,10 @@ public class DataFragment extends Fragment {
      */
     private void initializeList(View v) {
         Context cxt = getActivity();
+
+        // Update time
+        this.millisSinceBoot = SystemClock.elapsedRealtime();
+        this.hoursSinceBoot = this.millisSinceBoot / MILLIS_IN_HOURS;
 
         // Gather informal groupings of apps by UID
         Map<Integer, Set<App>> appGroups = new HashMap<>();
@@ -85,25 +90,36 @@ public class DataFragment extends Fragment {
             temp.apps = appGroups.get(uid);
             groups.add(temp);
         }
+
+        // Filter out any undesirable groups
+        for (int i= groups.size()-1; i >= 0; i--) {
+            if (groups.get(i).getNetworkUsage().total() < 1) {
+                groups.remove(i);
+            }
+        }
         Collections.sort(groups, new AppGroupDataComparator());
 
         // Use the app info to gather the list of display data
         List<String> displayData = new ArrayList<>();
-        for (AppGroup group : groups) {
+        long totalSent = 0, totalRecd = 0;
+        for (int i=0; i<groups.size(); i++) { // for each app group...
 
-            // For each valid app...
-            NetStat n = group.getNetworkUsage();
-            if (n.valid()) {
-                // Extract network statistics in friendly units
-                int unitFlag = NetStat.biggestInformativeUnit(n.total());
-                String value = Long.toString(NetStat.convert(n.total(), unitFlag));
-                String units = NetStat.unitAbbv(unitFlag);
+            // ... get network activity
+            NetStat n = groups.get(i).getNetworkUsage();
+            totalSent += n.sent();
+            totalRecd += n.received();
 
-                // Format the display data and add to list
-                String datum = value + ' ' + units + " | " + group.name();
-                displayData.add(displayData.size(), datum);
-            }
+            // Extract network statistics in friendly units
+            int unitFlag = NetStat.biggestInformativeUnit(n.total());
+            String value = Long.toString(NetStat.convert(n.total(), unitFlag));
+            String units = NetStat.unitAbbv(unitFlag);
+
+            // Format the display data and add to list
+            String datum = value + ' ' + units + " | " + groups.get(i).name();
+            displayData.add(displayData.size(), datum);
         }
+        aggregate = new NetStat(totalSent, totalRecd);
+        dataDetailDialog("Aggregate", aggregate, null);
 
         // Initialize the adapter (connect adapter to logic-side list)
         appAdapter = new ArrayAdapter<>(cxt, android.R.layout.simple_list_item_1, displayData);
@@ -115,18 +131,19 @@ public class DataFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                // Determine the App specifics
-                AppGroup group = groups.get(position);
-                String detail = dataDetail(group);
-
-                // Build and show the data detail dialog
-                AlertDialog.Builder dlg = new AlertDialog.Builder(getActivity());
-                dlg.setTitle(group.name());
-                dlg.setMessage(detail);
-                dlg.setNeutralButton("OK", null);
-                dlg.create().show();
+                AppGroup group = groups.get(position);  // get group data
+                dataDetailDialog(group.name(), group.getNetworkUsage(), group);
             }
         });
+    }
+
+    private void dataDetailDialog(String title, NetStat n, AppGroup g) {
+
+        AlertDialog.Builder dlg = new AlertDialog.Builder(getActivity());
+        dlg.setTitle(title);
+        dlg.setMessage(dataDetail(n, g));
+        dlg.setNeutralButton("OK", null);
+        dlg.create().show();
     }
 
     /**
@@ -139,11 +156,7 @@ public class DataFragment extends Fragment {
      * @param group set of like-UID App
      * @return detailed network statistics (as string)
      */
-    private String dataDetail(AppGroup group) {
-
-        NetStat n = group.getNetworkUsage();
-        long millisSinceBoot = SystemClock.elapsedRealtime();
-        long hoursSinceBoot = millisSinceBoot / MILLIS_IN_HOURS;
+    private String dataDetail(NetStat n, AppGroup group) {
 
         // HOURS-SINCE-BOOT FIELD
         String detail = "\nHours since boot: " + Long.toString(hoursSinceBoot) + '\n';
@@ -153,23 +166,32 @@ public class DataFragment extends Fragment {
 
         // DATA-BREAKDOWN FIELDS
         detail += '\n';
-        detail += detailFieldContent("Sent", n.sent(), hoursSinceBoot);
-        detail += detailFieldContent("Recd", n.received(), hoursSinceBoot);
-        detail += detailFieldContent("Total", n.total(), hoursSinceBoot);
+        detail += detailFieldContent("Sent", n.sent());
+        detail += detailFieldContent("Recd", n.received());
+        detail += detailFieldContent("Total", n.total());
 
         // LIST PACKAGES
-        detail += '\n';
-        detail += "PACKAGES:\n";
-        for (App app : group.apps) {
-            String appname = app.name();
-            String pkgname = app.pkgInfo().packageName;
+        if (group != null) {
+            if (group.apps != null) {
+                if (group.apps.size() > 1) {
+                    detail += '\n';
+                    detail += "PACKAGES:\n";
+                    for (App app : group.apps) {
+                        String appname = app.name();
+                        String pkgname = app.pkgInfo().packageName;
 
-            String usename = appname;
-            if (appname == null) {
-                usename = pkgname;
+                        String usename = appname;
+                        if (appname == null) {
+                            usename = pkgname;
+                        }
+
+                        detail += '"' + usename + '"' + '\n';
+                    }
+
+                }
+
             }
 
-            detail += '"' + usename + '"' + '\n';
         }
 
         return detail;
@@ -195,11 +217,10 @@ public class DataFragment extends Fragment {
      *
      * @param name name of measure
      * @param bytes byte volume
-     * @param hoursSinceBoot long-represented hours since boot
      *
      * @return data field for placement within data-detail dialog
      */
-    private String detailFieldContent(String name, long bytes, long hoursSinceBoot) {
+    private String detailFieldContent(String name, long bytes) {
 
         // Put NAME and byte-volume
         String content = name + ":\t";
