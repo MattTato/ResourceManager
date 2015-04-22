@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -33,7 +39,8 @@ public class DataFragment extends Fragment {
         // Required empty public constructor
     }
 
-    List<App> apps;             // consider use of public/private
+    //List<App> apps;             // consider use of public/private
+    List<AppGroup> groups;
     ListAdapter appAdapter;     // used to display
     ListView appList;           // UI-visible list of apps
 
@@ -56,27 +63,48 @@ public class DataFragment extends Fragment {
     private void initializeList(View v) {
         Context cxt = getActivity();
 
-        // Initialize the logic-side app list, then sort
-        apps = MainActivity.pollApps(cxt);
-        Collections.sort(apps, new AppDataComparitor());
+        // Gather informal groupings of apps by UID
+        Map<Integer, Set<App>> appGroups = new HashMap<>();
+        List<App> apps = MainActivity.pollApps(cxt);
+        for (App a : apps) {
+            int k = a.uid(); // use the UID as the package group key
 
-        // Use the app info to gather a list of display data
+            // If the UID has yet to be encountered...
+            if (!appGroups.containsKey(k)) {
+                Set<App> grouping = new HashSet<>();    // ... make a group for it
+                appGroups.put(k, grouping);             // ... add the group to the others
+            }
+
+            // Put the app into its appropriate group
+            appGroups.get(k).add(a);
+        }
+
+        // Filter groups into a formal AppGroup list, then sort
+        groups = new ArrayList<>();
+        Set<Integer> uids = appGroups.keySet();
+        for (int uid : uids) {
+            AppGroup temp = new AppGroup(uid);
+            temp.apps = appGroups.get(uid);
+            groups.add(temp);
+        }
+        Collections.sort(groups, new AppGroupDataComparator());
+        Toast.makeText(cxt, Integer.toString(groups.size()) + " App groups found.", Toast.LENGTH_LONG).show();
+
+        // Use the app info to gather the list of display data
         List<String> displayData = new ArrayList<>();
-        for (App app : apps) {
+        for (AppGroup group : groups) {
 
             // For each valid app...
-            NetStat n = app.getNetworkUsage();
+            NetStat n = group.getNetworkUsage();
             if (n.valid()) {
-
                 // Extract network statistics in friendly units
                 int unitFlag = NetStat.biggestInformativeUnit(n.total());
                 String value = Long.toString(NetStat.convert(n.total(), unitFlag));
                 String units = NetStat.unitAbbv(unitFlag);
 
                 // Format the display data and add to list
-                String datum = value + ' ' + units + " | " + app.name();
+                String datum = value + ' ' + units + " | " + group.name();
                 displayData.add(displayData.size(), datum);
-
             }
         }
 
@@ -90,11 +118,13 @@ public class DataFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                App a = apps.get(position);
-                String detail = dataDetail(a);
+                // Determine the App specifics
+                AppGroup group = groups.get(position);
+                String detail = dataDetail(group);
 
+                // Build and show the data detail dialog
                 AlertDialog.Builder dlg = new AlertDialog.Builder(getActivity());
-                dlg.setTitle(a.name());
+                dlg.setTitle(group.name());
                 dlg.setMessage(detail);
                 dlg.setNeutralButton("OK", null);
                 dlg.create().show();
@@ -109,21 +139,17 @@ public class DataFragment extends Fragment {
      * Explains: package name, network usage (sent, received, total),
      * usage rate (KB/hr).
      *
-     * @param a reference to App
+     * @param group set of like-UID App
      * @return detailed network statistics (as string)
      */
-    private String dataDetail(App a) {
+    private String dataDetail(AppGroup group) {
 
-        NetStat n = a.getNetworkUsage();
+        NetStat n = group.getNetworkUsage();
         long millisSinceBoot = SystemClock.elapsedRealtime();
         long hoursSinceBoot = millisSinceBoot / MILLIS_IN_HOURS;
 
-        // PACKAGE NAME FIELD
-        String detail = "Package: \"" + a.pkgInfo().packageName + "\"\n";
-        detail += "UID=" + Integer.toString(a.uid()) + '\n';
-
         // HOURS-SINCE-BOOT FIELD
-        detail += "\nHours since boot: " + Long.toString(hoursSinceBoot) + '\n';
+        String detail = "\nHours since boot: " + Long.toString(hoursSinceBoot) + '\n';
 
         // SEND:RECEIVE RATIO FIELD
         detail += "Send:Receive = " + Integer.toString((int)(100.0 * ((double)n.sent() / (double)n.received()) + 0.5)) + "%\n";
@@ -133,6 +159,21 @@ public class DataFragment extends Fragment {
         detail += detailFieldContent("Sent", n.sent(), hoursSinceBoot);
         detail += detailFieldContent("Recd", n.received(), hoursSinceBoot);
         detail += detailFieldContent("Total", n.total(), hoursSinceBoot);
+
+        // LIST PACKAGES
+        detail += '\n';
+        detail += "PACKAGES:\n";
+        for (App app : group.apps) {
+            String appname = app.name();
+            String pkgname = app.pkgInfo().packageName;
+
+            String usename = appname;
+            if (appname == null) {
+                usename = pkgname;
+            }
+
+            detail += '"' + usename + '"' + '\n';
+        }
 
         return detail;
     }
