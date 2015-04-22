@@ -119,7 +119,6 @@ public class DataFragment extends Fragment {
             displayData.add(displayData.size(), datum);
         }
         aggregate = new NetStat(totalSent, totalRecd);
-        dataDetailDialog("Aggregate", aggregate, null);
 
         // Initialize the adapter (connect adapter to logic-side list)
         appAdapter = new ArrayAdapter<>(cxt, android.R.layout.simple_list_item_1, displayData);
