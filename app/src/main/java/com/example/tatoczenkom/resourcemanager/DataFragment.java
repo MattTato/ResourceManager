@@ -6,7 +6,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,7 +86,6 @@ public class DataFragment extends Fragment {
             groups.add(temp);
         }
         Collections.sort(groups, new AppGroupDataComparator());
-        Toast.makeText(cxt, Integer.toString(groups.size()) + " App groups found.", Toast.LENGTH_LONG).show();
 
         // Use the app info to gather the list of display data
         List<String> displayData = new ArrayList<>();
