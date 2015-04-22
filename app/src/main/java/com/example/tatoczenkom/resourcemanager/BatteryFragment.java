@@ -36,6 +36,13 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         return v;
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        View v = getView();
+        GetBatteryInformation(v);
+    }
+
     public void onClick(View v){
         switch(v.getId()){
             case R.id.opensettings_button:
@@ -44,6 +51,7 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    // Will start the Battery Usage Summary page in the Settings app
     private void StartBatteryUsageActivity(){
         getActivity().startActivity(new Intent(Intent.ACTION_POWER_USAGE_SUMMARY));
     }
@@ -57,6 +65,7 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL;
 
+        // Setup checkbox to display if we are charging or not
         CheckBox checkCharging = (CheckBox)v.findViewById(R.id.chargingCheckBox);
         checkCharging.setChecked(isCharging);
         checkCharging.setClickable(false);
@@ -66,10 +75,11 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
         boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
 
+        // Setup checkbox to display if we are using AC charging
         CheckBox acChargeBox = (CheckBox)v.findViewById(R.id.acChargeCheckBox);
         acChargeBox.setClickable(false);
         acChargeBox.setChecked(acCharge);
-
+        // Setup checkbox to display if we are using USB charging
         CheckBox usbChargeBox = (CheckBox)v.findViewById(R.id.usbChargeCheckBox);
         usbChargeBox.setClickable(false);
         usbChargeBox.setChecked(usbCharge);
@@ -77,6 +87,7 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         int health = batteryStatus.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
         boolean isGood = health == BatteryManager.BATTERY_HEALTH_GOOD;
 
+        // Setup checkbox to display if the battery's health is good
         CheckBox batHealthBox = (CheckBox)v.findViewById(R.id.batHealthGoodCheckBox);
         batHealthBox.setClickable(false);
         batHealthBox.setChecked(isGood);
@@ -87,6 +98,7 @@ public class BatteryFragment extends Fragment implements View.OnClickListener {
         float batteryPct = level / (float)scale;
         batteryPct *= 100;
 
+        // Display current battery utilization as a percentage
         TextView batteryPctText = (TextView)v.findViewById(R.id.chargingPercentText);
         batteryPctText.setText("Battery percentage: " + Float.toString(batteryPct) + "%");
     }
