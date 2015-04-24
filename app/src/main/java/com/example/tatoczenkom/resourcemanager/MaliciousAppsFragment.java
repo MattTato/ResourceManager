@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +44,7 @@ public class MaliciousAppsFragment extends Fragment {
     NetStat aggregate;
     long millisSinceBoot;
     long hoursSinceBoot;
-
+    TextView topText;
     static final long MILLIS_IN_HOURS = (60 * 60 * 1000);
     static final int MAX_NUM = 5;
 
@@ -140,6 +141,14 @@ public class MaliciousAppsFragment extends Fragment {
                 dataDetailDialog(group.name(), group.getNetworkUsage(), group);
             }
         });
+
+        // Put text at the top of the list to say what this screen does
+        topText = (TextView) (v.findViewById(R.id.textView1));
+        topText.setText("These are the applications that are taking up the most data, and " +
+        "therefore could be malicious.");
+        if (groups.size() > 0) {
+            appList.addHeaderView(topText);
+        }
     }
 
     private void dataDetailDialog(String title, NetStat n, AppGroup g) {
