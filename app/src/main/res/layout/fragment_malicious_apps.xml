@@ -3,6 +3,23 @@
     android:layout_height="match_parent"
     tools:context="com.example.tatoczenkom.resourcemanager.MaliciousAppsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/textView1"
+            android:textColor="#ff000000"
+            android:layout_marginLeft="4dp" />
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/mal_app_list" />
+    </LinearLayout>
 
 </FrameLayout>

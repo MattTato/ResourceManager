@@ -54,7 +54,7 @@ public class MaliciousAppsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_data, container, false);
+        View v = inflater.inflate(R.layout.fragment_malicious_apps, container, false);
         initializeList(v);
         return v;
     }
@@ -131,7 +131,7 @@ public class MaliciousAppsFragment extends Fragment {
         appAdapter = new ArrayAdapter<>(cxt, android.R.layout.simple_list_item_1, displayData);
 
         // Initialize the display list (connect adapter to UI-side list)
-        appList = (ListView)(v.findViewById(R.id.data_app_list));
+        appList = (ListView)(v.findViewById(R.id.mal_app_list));
         appList.setAdapter(appAdapter);
         appList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -147,7 +147,9 @@ public class MaliciousAppsFragment extends Fragment {
         topText.setText("These are the applications that are taking up the most data, and " +
         "therefore could be malicious.");
         if (groups.size() > 0) {
-            appList.addHeaderView(topText);
+            topText.setVisibility(View.VISIBLE);
+        } else {
+            topText.setVisibility(View.GONE);
         }
     }
 
